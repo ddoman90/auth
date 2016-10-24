@@ -3,10 +3,14 @@ import { View } from 'react-native';
 
 import firebase from 'firebase';
 
-import { Header } from './components/common';
+import { Header, Button, Spinner } from './components/common';
 import LoginForm from './components/LoginForm';
 
 class App extends Component {
+  state = {
+    loggedIn: null
+  }
+
   componentWillMount() {
     firebase.initializeApp({
       apiKey: "AIzaSyBn_pwnulkRdR-UjiHJ4ZiYBQw9uuzzUJc",
@@ -15,13 +19,43 @@ class App extends Component {
       storageBucket: "authentication-e35ab.appspot.com",
       messagingSenderId: "118740226729"
     });
+
+    // this function will be called, if the user state changes
+    // user argument is undefined, if sign out
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        this.setState({
+          loggedIn: true
+        });
+      }
+      else {
+        this.setState({
+          loggedIn: false
+        });
+      }
+    });
+  }
+
+  renderContent() {
+
+    switch (this.state.loggedIn) {
+      case true:
+        return (
+          <Button onPress={ () => firebase.auth().signOut() }>Log Out</Button>
+        )
+      case false:
+        return <LoginForm />
+      default:
+        return <Spinner />
+    }
+
   }
 
   render() {
     return (
       <View>
         <Header headerText="Authentication" />
-        <LoginForm />
+        {this.renderContent()}
       </View>
     )
   }
